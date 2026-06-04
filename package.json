@@ -1,0 +1,109 @@
+{
+  "name": "noor",
+  "version": "3.0.1",
+  "homepage": "soon",
+  "description": "Noor - Islamic Desktop Application",
+  "bin": {
+    "noor": "./src/index.js"
+  },
+  "main": "./src/index.js",
+  "type": "commonjs",
+  "author": {
+    "name": "عبد القادر DEV",
+    "email": "kaderdev67@gmail.com",
+    "url": "https://github.com/dev0math"
+  },
+  "license": "GPL-3.0",
+  "scripts": {
+    "packwin": "electron-builder --windows",
+    "packlinux": "electron-builder --linux",
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dev": "nodemon --exec electron ."
+  },
+  "dependencies": {
+    "adhan": "^4.4.3",
+    "fs-extra": "^11.1.1",
+    "menubar": "^9.3.0",
+    "moment-duration-format": "^2.3.2",
+    "moment-hijri": "^2.1.2",
+    "moment-timezone": "^0.5.43",
+    "node-fetch": "^2.6.7",
+    "v8-compile-cache": "^2.3.0"
+  },
+  "devDependencies": {
+    "electron": "^22.3.2",
+    "electron-builder": "^23.6.0",
+    "nodemon": "^2.0.21"
+  },
+  "build": {
+    "directories": {
+      "buildResources": "resources"
+    },
+    "productName": "Noor",
+    "publish": {
+      "provider": "github",
+      "owner": "noor-team",
+      "repo": "noor-islamic-desktop",
+      "protocol": "https"
+    },
+    "appId": "org.noor.Noor",
+    "copyright": "Copyleft 🄯 2023 Noor",
+    "win": {
+      "icon": "./src/build/icons/icon.ico",
+      "signingHashAlgorithms": [
+        "sha256",
+        "sha1"
+      ],
+      "signAndEditExecutable": true,
+      "publisherName": "عبد القادر DEV",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        },
+        {
+          "target": "portable"
+        },
+        {
+          "target": "msi"
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": "false",
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": "true",
+      "installerIcon": "./src/build/icons/icon.ico",
+      "uninstallerIcon": "./src/build/icons/icon.ico",
+      "license": "./src/build/LICENSE.txt",
+      "shortcutName": "نور",
+      "uninstallDisplayName": "نور",
+      "installerSidebar": "./src/build/installerSidebar.bmp",
+      "uninstallerSidebar": "./src/build/installerSidebar.bmp",
+      "installerHeader": "./src/build/installerHeader.bmp"
+    },
+    "linux": {
+      "category": "Education",
+      "icon": "./src/build/icons/icon.icns",
+      "vendor": "Ryan Almalki",
+      "description": "Noor - Islamic Desktop Application",
+  "bin": {
+    "noor": "./src/index.js"
+  },
+      "synopsis": "Islamic Desktop Application",
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm",
+        "snap",
+        "flatpak",
+        "tar.gz"
+      ]
+    }
+  }
+}
