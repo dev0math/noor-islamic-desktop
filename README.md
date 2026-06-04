@@ -110,6 +110,28 @@ noor --hidden     # Launch minimized to tray
 
 ---
 
+## Uninstall
+
+To remove Noor from your system:
+
+### Linux / macOS / WSL
+```bash
+bash uninstall.sh
+```
+
+### Windows (PowerShell)
+```powershell
+.\uninstall.ps1
+```
+
+This will remove:
+- Installation directory (`~/.local/share/noor`)
+- Terminal command (`noor`)
+- Desktop shortcuts and menu entries
+- PATH entries
+
+---
+
 ## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
