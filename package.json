@@ -92,9 +92,6 @@
       "icon": "./src/build/icons/icon.icns",
       "vendor": "Ryan Almalki",
       "description": "Noor - Islamic Desktop Application",
-  "bin": {
-    "noor": "./src/index.js"
-  },
       "synopsis": "Islamic Desktop Application",
       "target": [
         "AppImage",
