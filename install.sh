@@ -287,23 +287,31 @@ install_npm_deps() {
 }
 
 # ============================================================
-# Build Application
+# Build Application (Optional - for distribution)
 # ============================================================
 build_app() {
     print_status "Building Noor application..."
     cd "$NOOR_INSTALL_DIR"
 
-    if [[ "$IS_WINDOWS" == true ]]; then
-        npm run packwin || npm run dist || npm run pack
-    elif [[ "$IS_LINUX" == true ]]; then
-        npm run packlinux || npm run dist || npm run pack
+    # Try to build, but don't fail if it takes too long
+    # For development, npm start works without building
+    if [[ "$IS_LINUX" == true ]]; then
+        # Build AppImage only (fastest)
+        timeout 300 npm run packlinux 2>/dev/null || {
+            print_warning "Build timed out or failed. Using npm start instead."
+            print_info "To build manually later: cd ~/.local/share/noor && npm run packlinux"
+        }
+    elif [[ "$IS_WINDOWS" == true ]]; then
+        timeout 300 npm run packwin 2>/dev/null || {
+            print_warning "Build timed out or failed. Using npm start instead."
+        }
     elif [[ "$IS_MACOS" == true ]]; then
-        npm run dist || npm run pack
-    else
-        npm run dist || npm run pack
+        timeout 300 npm run dist 2>/dev/null || {
+            print_warning "Build timed out or failed. Using npm start instead."
+        }
     fi
 
-    print_success "Build complete"
+    print_success "Setup complete (npm start ready)"
 }
 
 # ============================================================
@@ -314,16 +322,29 @@ create_desktop_integration() {
         print_status "Creating desktop integration (Linux)..."
 
         APP_PATH=""
+        # Check for built AppImage first
         if ls "$NOOR_INSTALL_DIR/dist/Noor-"*.AppImage &>/dev/null; then
             APP_PATH=$(ls "$NOOR_INSTALL_DIR/dist/Noor-"*.AppImage | head -1)
+            print_info "Using built AppImage: $APP_PATH"
         elif [ -f "$NOOR_INSTALL_DIR/dist/linux-unpacked/noor" ]; then
             APP_PATH="$NOOR_INSTALL_DIR/dist/linux-unpacked/noor"
         elif [ -f "$NOOR_INSTALL_DIR/dist/linux-unpacked/Noor" ]; then
             APP_PATH="$NOOR_INSTALL_DIR/dist/linux-unpacked/Noor"
         fi
 
-        if [ -n "$APP_PATH" ]; then
-            cat > "$NOOR_DESKTOP_DIR/noor.desktop" << EOF
+        # If no build found, use npm start wrapper
+        if [ -z "$APP_PATH" ]; then
+            print_info "No build found. Creating npm start launcher..."
+            APP_PATH="$NOOR_INSTALL_DIR/launch-noor.sh"
+            cat > "$APP_PATH" << 'EOF'
+#!/bin/bash
+cd "$HOME/.local/share/noor"
+npm start "$@"
+EOF
+            chmod +x "$APP_PATH"
+        fi
+
+        cat > "$NOOR_DESKTOP_DIR/noor.desktop" << EOF
 [Desktop Entry]
 Name=Noor (نور)
 Comment=Islamic Desktop Application
@@ -335,20 +356,17 @@ Terminal=false
 StartupNotify=true
 Keywords=islam;quran;prayer;adhkar;
 EOF
-            chmod +x "$NOOR_DESKTOP_DIR/noor.desktop"
+        chmod +x "$NOOR_DESKTOP_DIR/noor.desktop"
 
-            if [ -f "$NOOR_INSTALL_DIR/src/build/icons/icon.png" ]; then
-                cp "$NOOR_INSTALL_DIR/src/build/icons/icon.png" "$NOOR_ICON_DIR/noor.png" 2>/dev/null || true
-            fi
-
-            if command -v update-desktop-database &> /dev/null; then
-                update-desktop-database "$NOOR_DESKTOP_DIR" 2>/dev/null || true
-            fi
-
-            print_success "Desktop entry created"
-        else
-            print_warning "Could not find built executable for desktop entry"
+        if [ -f "$NOOR_INSTALL_DIR/src/build/icons/icon.png" ]; then
+            cp "$NOOR_INSTALL_DIR/src/build/icons/icon.png" "$NOOR_ICON_DIR/noor.png" 2>/dev/null || true
         fi
+
+        if command -v update-desktop-database &> /dev/null; then
+            update-desktop-database "$NOOR_DESKTOP_DIR" 2>/dev/null || true
+        fi
+
+        print_success "Desktop entry created"
 
     elif [[ "$IS_MACOS" == true ]]; then
         print_status "Creating macOS app link..."
@@ -410,14 +428,16 @@ EOF
         cat > "$NOOR_BIN_DIR/noor" << 'EOF'
 #!/bin/bash
 NOOR_DIR="$HOME/.local/share/noor"
+# Try built executable first
 if [ -f "$NOOR_DIR/dist/linux-unpacked/noor" ]; then
     "$NOOR_DIR/dist/linux-unpacked/noor" "$@"
 elif [ -f "$NOOR_DIR/dist/linux-unpacked/Noor" ]; then
     "$NOOR_DIR/dist/linux-unpacked/Noor" "$@"
 elif ls "$NOOR_DIR/dist/Noor-"*.AppImage &>/dev/null; then
-    APP_IMAGE=$(ls "$NOOR_INSTALL_DIR/dist/Noor-"*.AppImage | head -1)
+    APP_IMAGE=$(ls "$NOOR_DIR/dist/Noor-"*.AppImage | head -1)
     "$APP_IMAGE" "$@"
 else
+    # Fallback: use npm start (fast, no build needed)
     cd "$NOOR_DIR"
     npm start "$@"
 fi
