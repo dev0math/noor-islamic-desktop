@@ -396,6 +396,9 @@ function Main {
         Write-Info "Please restart PowerShell or Command Prompt"
         Write-Info "Then run: noor"
     }
+    
+    Write-Host ""
+    Write-Info "To uninstall Noor later, run: .\uninstall.ps1"
 }
 
 Main
