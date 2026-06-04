@@ -13,6 +13,102 @@ NOOR_BIN_DIR="$HOME/.local/bin"
 NOOR_DESKTOP_DIR="$HOME/.local/share/applications"
 NOOR_ICON_DIR="$HOME/.local/share/icons/hicolor/256x256/apps"
 
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+print_status()  { echo -e "${BLUE}[Noor]${NC} $1"; }
+print_success() { echo -e "${GREEN}[ OK ]${NC} $1"; }
+print_warning() { echo -e "${YELLOW}[WARN]${NC} $1"; }
+
+# ============================================================
+# Main Uninstall
+# ============================================================
+echo ""
+echo -e "${BOLD}${YELLOW}================================================================${NC}"
+echo -e "${BOLD}${YELLOW}              Noor (نور) - Uninstaller                          ${NC}"
+echo -e "${BOLD}${YELLOW}================================================================${NC}"
+echo ""
+
+print_status "This will remove Noor and all its files from your system."
+read -rp "Are you sure you want to continue? (y/N): " confirm
+
+if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+    print_status "Uninstall cancelled."
+    exit 0
+fi
+
+echo ""
+
+# Remove installation directory
+if [[ -d "$NOOR_INSTALL_DIR" ]]; then
+    print_status "Removing installation directory..."
+    rm -rf "$NOOR_INSTALL_DIR"
+    print_success "Removed: $NOOR_INSTALL_DIR"
+else
+    print_warning "Installation directory not found: $NOOR_INSTALL_DIR"
+fi
+
+# Remove terminal commands
+for cmd in noor noor.bat noor.ps1; do
+    if [[ -f "$NOOR_BIN_DIR/$cmd" ]]; then
+        rm -f "$NOOR_BIN_DIR/$cmd"
+        print_success "Removed command: $NOOR_BIN_DIR/$cmd"
+    fi
+done
+
+# Remove desktop entry (Linux)
+if [[ -f "$NOOR_DESKTOP_DIR/noor.desktop" ]]; then
+    rm -f "$NOOR_DESKTOP_DIR/noor.desktop"
+    print_success "Removed desktop entry"
+fi
+
+# Remove icon (Linux)
+if [[ -f "$NOOR_ICON_DIR/noor.png" ]]; then
+    rm -f "$NOOR_ICON_DIR/noor.png"
+    print_success "Removed icon"
+fi
+
+# Update desktop database (Linux)
+if command -v update-desktop-database &>/dev/null; then
+    update-desktop-database "$NOOR_DESKTOP_DIR" 2>/dev/null || true
+    print_success "Desktop database updated"
+fi
+
+# Remove PATH entries from shell config files
+print_status "Cleaning PATH entries from shell configs..."
+for rc in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.bash_profile" "$HOME/.profile"; do
+    if [[ -f "$rc" ]]; then
+        sed -i "\|export PATH=\"$NOOR_BIN_DIR:\$PATH\"|d" "$rc" 2>/dev/null || true
+    fi
+done
+print_success "Shell configs cleaned"
+
+echo ""
+echo -e "${BOLD}${GREEN}================================================================${NC}"
+echo -e "${BOLD}${GREEN}                    Uninstall Complete                          ${NC}"
+echo -e "${BOLD}${GREEN}================================================================${NC}"
+echo ""
+echo -e "  ${YELLOW}Note:${NC} Restart your terminal for PATH changes to take effect."
+echo ""
+#!/bin/bash
+
+# ============================================================
+# Noor (نور) - Uninstaller
+# ============================================================
+# Usage: bash uninstall.sh
+# ============================================================
+
+set -e
+
+NOOR_INSTALL_DIR="$HOME/.local/share/noor"
+NOOR_BIN_DIR="$HOME/.local/bin"
+NOOR_DESKTOP_DIR="$HOME/.local/share/applications"
+NOOR_ICON_DIR="$HOME/.local/share/icons/hicolor/256x256/apps"
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
