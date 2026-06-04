@@ -506,6 +506,9 @@ main() {
         print_info "Please restart your terminal or run: source ~/.bashrc"
         print_info "Then run: noor"
     fi
+    
+    echo ""
+    print_info "To uninstall Noor later, run: bash uninstall.sh"
 }
 
 main "$@"
